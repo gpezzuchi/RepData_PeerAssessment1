@@ -7,9 +7,7 @@ output:
     keep_md: true
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
+
 
 # Reproducible Research: Peer Assessment 1
 ## Gaston Pezzuchi
@@ -18,7 +16,8 @@ knitr::opts_chunk$set(echo = TRUE)
 ## Preliminaries
 
 1. *We will start by setting the working directory and clearing the workspace*
-```{r}
+
+```r
 # Setting working directory (change accordingly)
 setwd("/Volumes/HP x755w/Coursera/Reproducible/Project1")
 
@@ -30,7 +29,8 @@ rm(list=ls())
    The required .zip file is named: **"repdata_data_activity.zip"**
    First we need to unzip the data
 
-```{r}
+
+```r
 if (!file.exists('activity.csv')) {
   unzip(zipfile = "repdata_data_activity.zip")
 }
@@ -40,36 +40,66 @@ if (!file.exists('activity.csv')) {
 
      a. Load the raw data
 
-```{r}
+
+```r
 # Load the raw activity data
 activity_raw <- read.csv("activity.csv", stringsAsFactors=FALSE)
 ```
      
      b. Let's see the data:
 
-```{r}
+
+```r
 dim(activity_raw)
+```
+
+```
+## [1] 17568     3
+```
+
+```r
 head(activity_raw)
+```
+
+```
+##   steps       date interval
+## 1    NA 2012-10-01        0
+## 2    NA 2012-10-01        5
+## 3    NA 2012-10-01       10
+## 4    NA 2012-10-01       15
+## 5    NA 2012-10-01       20
+## 6    NA 2012-10-01       25
 ```
 
    There are 17568 observations and 3 variables, yet, the date variable is of *"character"* type instead of *"date"*
 
-```{r}
+
+```r
 typeof(activity_raw$date)
+```
+
+```
+## [1] "character"
 ```
 
 Hence we need now to:
 
       c. Transform the date attribute to an actual date type
 
-```{r}
+
+```r
 activity_raw$date <- as.POSIXct(activity_raw$date, format="%Y-%m-%d")
 typeof(activity_raw$date)
 ```
 
+```
+## [1] "double"
+```
+
       d. We also need to compute the weekdays from this date
 
-```{r}
+
+```r
 activity_raw <- data.frame(date=activity_raw$date, 
                            weekday=tolower(weekdays(activity_raw$date)), 
                            steps=activity_raw$steps, 
@@ -78,7 +108,8 @@ activity_raw <- data.frame(date=activity_raw$date,
 
       e. Also we need to calculate the type of day (weekday / weekend)
 
-```{r}
+
+```r
 activity_raw <- cbind(activity_raw, 
                       daytype=ifelse(activity_raw$weekday == "saturday" | 
                                      activity_raw$weekday == "sunday", "weekend", 
@@ -87,7 +118,8 @@ activity_raw <- cbind(activity_raw,
 
       f. We now have all the required fields for the final dataframe
 
-```{r}
+
+```r
 activity <- data.frame(date=activity_raw$date, 
                        weekday=activity_raw$weekday, 
                        daytype=activity_raw$daytype, 
@@ -95,7 +127,19 @@ activity <- data.frame(date=activity_raw$date,
                        steps=activity_raw$steps)
 # Let's see a bit of the dataframe
 head(activity)
+```
 
+```
+##         date weekday daytype interval steps
+## 1 2012-10-01  monday weekday        0    NA
+## 2 2012-10-01  monday weekday        5    NA
+## 3 2012-10-01  monday weekday       10    NA
+## 4 2012-10-01  monday weekday       15    NA
+## 5 2012-10-01  monday weekday       20    NA
+## 6 2012-10-01  monday weekday       25    NA
+```
+
+```r
 # To keep tidy the workspace we need to delete the activity_raw dataframe we will no longer use
 rm(activity_raw)
 ```
@@ -111,7 +155,8 @@ rm(activity_raw)
 
       a. Let's Calculate the total number of steps taken each day (we will remove the NA values)
 
-```{r}
+
+```r
 sum_dat <- aggregate(activity$steps, by=list(activity$date), FUN=sum, na.rm=TRUE)
 
 # Rename the attributes
@@ -120,16 +165,35 @@ names(sum_dat) <- c("date", "total")
 
          We can now take a closer look to the newly created dataframe
       
-```{r}
+
+```r
 dim(sum_dat)
+```
+
+```
+## [1] 61  2
+```
+
+```r
 head(sum_dat)
+```
+
+```
+##         date total
+## 1 2012-10-01     0
+## 2 2012-10-02   126
+## 3 2012-10-03 11352
+## 4 2012-10-04 12116
+## 5 2012-10-05 13294
+## 6 2012-10-06 15420
 ```
 
 
       b. Histogram of the total number of steps taken each day
 
 
-```{r}
+
+```r
 # We will use ggplot2 to calculate the histogram of the total number of steps each day
 library(ggplot2)
 ggplot(data=sum_dat, aes(total)) + 
@@ -141,13 +205,27 @@ ggplot(data=sum_dat, aes(total)) +
   ylim(c(0,20))
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-12-1.png)<!-- -->
+
 
       c. We now need to calculate and report the mean and the median of the total number of steps taken per day
 
 
-```{r}
+
+```r
 mean(sum_dat$total)
+```
+
+```
+## [1] 9354.23
+```
+
+```r
 median(sum_dat$total)
+```
+
+```
+## [1] 10395
 ```
 
    So as, we can see, we get a mean of **9354.23** and a median of **10395**
@@ -161,7 +239,8 @@ median(sum_dat$total)
 
    First, we need the average number of steps taken, hence:
    
-```{r}
+
+```r
 # Since que do not neeed the sum_dat dataframe we will remove it from the
 rm(sum_dat)
 
@@ -176,19 +255,39 @@ names(mean_dat) <- c("interval", "mean")
 
 # Chek the dataframe
 dim(mean_dat)
+```
+
+```
+## [1] 288   2
+```
+
+```r
 head(mean_dat)
+```
+
+```
+##   interval      mean
+## 1        0 1.7169811
+## 2        5 0.3396226
+## 3       10 0.1320755
+## 4       15 0.1509434
+## 5       20 0.0754717
+## 6       25 2.0943396
 ```
 
 
    Now we are ready to create the time series plot:
 
    
-```{r}
+
+```r
 library(ggplot2)
 ggplot(data = mean_dat, aes(x = interval, y = mean)) +
   geom_line(col="red", lwd=2) +
   labs(title="Time-series of the average number of steps per intervals\n(without NA)", x="Interval [5-minutes]", y="Average Number of Steps")
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-15-1.png)<!-- -->
 
 
    And, now we can answer *"Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?*
@@ -196,17 +295,29 @@ ggplot(data = mean_dat, aes(x = interval, y = mean)) +
       a. First we need to find the actual index of the maximum value of the mean
 
 
-```{r}
+
+```r
 max_index <- which(mean_dat$mean == max(mean_dat$mean))
 max_index
 ```
 
+```
+## [1] 104
+```
+
       b. We can now find the value of the 5-minute interval for that index
 
-```{r}
+
+```r
 max_interval <- mean_dat[max_index, 1]
 max_interval
+```
 
+```
+## [1] 835
+```
+
+```r
 # Once obtained the answer, we can remove the variables and the dataframe 
 rm(max_index, max_interval, mean_dat)
 ```
@@ -231,9 +342,17 @@ rm(max_index, max_interval, mean_dat)
 
    a. To calculate the total number of NAs in the dataset, we can use:
 
-```{r}
+
+```r
 NA_total <- sum(is.na(activity$steps))
 NA_total
+```
+
+```
+## [1] 2304
+```
+
+```r
 rm(NA_total) #we do not need this variable anymore
 ```
       
@@ -243,7 +362,8 @@ rm(NA_total) #we do not need this variable anymore
    In this case we will use a simple strategy of imputation, assigning the median to the NAs (we could have used the mean, but it will be more susceptible to extreme values in the distribution:
    
 
-```{r}
+
+```r
 # Locate the NA positions (index)
 na_pos <- which(is.na(activity$steps))
 
@@ -254,9 +374,14 @@ med_vec <- rep(median(activity$steps, na.rm=TRUE), times=length(na_pos))
 head(med_vec)
 ```
 
+```
+## [1] 0 0 0 0 0 0
+```
+
    As we can see, we have a vector of entire 0's as the median, so if we replace the NAs with this value we will get the same median and mean values as in question 1 (incidentally we will obtain the same histogram). *Hence, we switch to replace the NAs by the mean*, the procedure is the same as above:
 
-```{r}
+
+```r
 # Create a vector of means
 mean_vec <- rep(mean(activity$steps, na.rm=TRUE), times=length(na_pos))
 
@@ -264,12 +389,17 @@ mean_vec <- rep(mean(activity$steps, na.rm=TRUE), times=length(na_pos))
 head(mean_vec)
 ```
 
+```
+## [1] 37.3826 37.3826 37.3826 37.3826 37.3826 37.3826
+```
+
    Now, we can proceed with the imputation proceure, using the mean.
 
 
    c. Since we will replace the NAs with the meaan we will create a *"transformed"* dataframe 
    
-```{r}
+
+```r
 # Replace the NAs by the medians
 activity[na_pos, "steps"] <- mean_vec
 
@@ -278,12 +408,30 @@ rm(med_vec, mean_vec, na_pos)
 
 # We can now look at the transformed dataframe
 dim(activity)
+```
+
+```
+## [1] 17568     5
+```
+
+```r
 head(activity)
+```
+
+```
+##         date weekday daytype interval   steps
+## 1 2012-10-01  monday weekday        0 37.3826
+## 2 2012-10-01  monday weekday        5 37.3826
+## 3 2012-10-01  monday weekday       10 37.3826
+## 4 2012-10-01  monday weekday       15 37.3826
+## 5 2012-10-01  monday weekday       20 37.3826
+## 6 2012-10-01  monday weekday       25 37.3826
 ```
 
    d. (1) We need to create a histogram of the total number of steps taken each day
 
-```{r}
+
+```r
 # First we need to calculate the total number of steps each day (we no longer have the NAs)
 sum_dat <- aggregate(activity$steps, by=list(activity$date), FUN=sum)
 
@@ -301,12 +449,28 @@ ggplot(data=sum_dat, aes(total)) +
   ylim(c(0,30))
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-22-1.png)<!-- -->
+
    d. (2) The required mean and median are calculated using:
    
-```{r}
-mean(sum_dat$total)
-median(sum_dat$total)
 
+```r
+mean(sum_dat$total)
+```
+
+```
+## [1] 10766.19
+```
+
+```r
+median(sum_dat$total)
+```
+
+```
+## [1] 10766.19
+```
+
+```r
 # since we no longer need it we can remove sum_dat from the worskpace
 rm(sum_dat)
 ```
@@ -328,14 +492,33 @@ rm(sum_dat)
 
    a. Actually we have already created the two required factors at the begining of this document:
 
-```{r}
+
+```r
 head(activity)
+```
+
+```
+##         date weekday daytype interval   steps
+## 1 2012-10-01  monday weekday        0 37.3826
+## 2 2012-10-01  monday weekday        5 37.3826
+## 3 2012-10-01  monday weekday       10 37.3826
+## 4 2012-10-01  monday weekday       15 37.3826
+## 5 2012-10-01  monday weekday       20 37.3826
+## 6 2012-10-01  monday weekday       25 37.3826
+```
+
+```r
 dim(activity)
+```
+
+```
+## [1] 17568     5
 ```
 
    b. So, we are ready to create the required plot now:
    
-```{r}
+
+```r
 library(lattice)  # perfect for panel plots.
 
 # Calculate the mean number of steps by all daytype variable
@@ -357,9 +540,12 @@ xyplot(mean ~ interval | daytype, mean_dat,
        layout=c(1,2))
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-25-1.png)<!-- -->
+
    Lastly we can now clear the entire workspace
    
-```{r}
+
+```r
 rm(list=ls())
 ```
 
